@@ -11,10 +11,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-	<div class="container">
+	<div class="row">
   	<div class="well">
-    	<h1><a href="mastery.php">Champion Mastery</a></h1>
-			<p>Personalized Champion Mastery Stats for <?php if($_GET['playername'] != null) {echo "<mark>".$_GET['playername']."</mark>";} else{echo "use in Champion Select.";}?></p>
+    	<center><h1><a href="mastery.php">Champion Mastery</a></h1>
+			<p>Personalized Champion Mastery Stats for <?php if($_GET['playername'] != null) {echo "<mark>".$_GET['playername']."</mark>";} else{echo "use in Champion Select.";}?></p></center>
   	</div>
 	</div>
 <div class="row">
@@ -41,17 +41,17 @@
 			?>
 		</select>
 	</div>
-	<div class="col-xs-1">
+	<div class="col-xs-2">
 		<button type="submit" class="btn btn-info" style="margin: 25px;">
     	<span class="glyphicon glyphicon-search"></span> Search
   	</button>
 	</div>
 	</form>
-	<div class="col-xs-2"></div>
+	<div class="col-xs-1"></div>
 </div>
 <div class="row">
 <?php
-require_once("riotapi.php");
+require_once("../utilities/riotapi.php");
 
 /******** Main ********/
 $api = new RiotApi();
@@ -93,10 +93,36 @@ if($_GET['playername'] != null && $_GET['region'] != null)
 	$summonerInfo = $api->get_summonerId($summonerRegion, $playername);
 	$champmastery = $api->get_championMastery($region, $summonerInfo[$lcplayername]['id']);
 	$championInfo = $api->get_champList();
-	echo "<div class='col-lg-1'></div><div class='col-lg-10'><table class='table table-hover table-bordered'> <tr> <th></th> <th>Champion</th> <th>Mastery Level</th> <th>Points</th> <th>Points until lvl up</th> <th>Highest Grade</th> <th>Chest Earned</th> </tr> <tr>";
+	if($champmastery['status'] != null)
+	{
+		echo "<p class='text-center bg-danger'>Summoner Name: ". $_GET['playername'] ." not found on the ". html_entity_decode($_GET['region']) ." Server</p>";
+		echo "</div>
+		</body>
+		<nav class=\"navbar navbar-fixed-bottom\">
+		  <div class=\"container-fluid\">
+				<button class=\"btn btn-info\" onclick=\"location.href = \'http://derrickshimada.com\';\">Home</button>
+				<button class=\"btn btn-warning\" data-toggle=\"collapse\" data-target=\"#legal\">Legal</button></li>
+				<div id=\"legal\" class=\"collapse well\">
+				Champion Mastery isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends &copy; Riot Games, Inc.
+			</br></br>Copyright &copy; <a href=\"http://derrickshimada.com\">Derrick Shimada</a> 2016 All Rights Reserved.
+				</div>
+		  </div>
+		</nav>
+		</html>";
+		return;
+	}
+	echo "<div class='col-xs-1'></div><div class='col-xs-10'><table class='table table-hover table-bordered'> <tr> <th></th> <th>Champion</th> <th>Mastery Level</th> <th>Points</th> <th>Points until lvl up</th> <th>Highest Grade</th> <th>Chest Earned</th> </tr> <tr>";
 	foreach ($champmastery as $champion)
 	{
 		$cid = $champion['championId'];
+		if (intval($champion['championLevel']) == 7)
+		{
+			  echo "<tr style='background-color:#b3ffb3'>";
+		}
+		if (intval($champion['championLevel']) == 6)
+		{
+			  echo "<tr style='background-color:#e0b3ff'>";
+		}
 		if (intval($champion['championLevel']) == 5)
 		{
 				echo "<tr class='success'>";
@@ -123,7 +149,6 @@ if($_GET['playername'] != null && $_GET['region'] != null)
 		echo "<td>".$champion['championPoints']."</td>";
 		$champProgress = intval($champion['championPoints']) + intval($champion['championPointsUntilNextLevel']);
 		$champPercent  = (intval($champion['championPoints']) / intval($champProgress)) * 100;
-		//echo "<td>".$champion['championPointsUntilNextLevel']."</td>";
 		echo '<td><div class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="'.$champPercent.'"  aria-valuemin="0" aria-valuemax="100" style="min-width:3em; width:'.$champPercent.'%;">'.$champion['championPointsUntilNextLevel'].'</div></div>';
 		echo "<td>".$champion['highestGrade']."</td>";
 		if(intval($champion['chestGranted']) == 1)
@@ -138,18 +163,16 @@ if($_GET['playername'] != null && $_GET['region'] != null)
 	}
 	echo "</table></div>";
 }
-else {
-
-}
 ?>
 </div>
 </body>
 <nav class="navbar navbar-fixed-bottom">
   <div class="container-fluid">
-    <button class="btn btn-warning" data-toggle="collapse" data-target="#legal">Legal</button></li>
+		<button class="btn btn-info" onclick="location.href = 'http://derrickshimada.com';">Home</button>
+		<button class="btn btn-warning" data-toggle="collapse" data-target="#legal">Legal</button></li>
 		<div id="legal" class="collapse well">
-		Champion Mastery isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
-	</br></br>Copyright 2016 Derrick Shimada
+		Champion Mastery isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends &copy; Riot Games, Inc.
+	</br></br>Copyright &copy; <a href="http://derrickshimada.com">Derrick Shimada</a> 2016 All Rights Reserved.
 		</div>
   </div>
 </nav>
