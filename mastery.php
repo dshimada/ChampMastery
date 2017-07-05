@@ -70,28 +70,15 @@ if($_GET['playername'] != null && $_GET['region'] != null)
 		"Russia" => "RU",
 		"Turkey" => "TR1",
 	];
-	//Riot has inconsistent Inputs for their API for Region,
-	//this one is for ones specifically without trailing numbers.
-	$summonerRegions = [
-		"BR1" => "BR",
-		"EUN1" => "EUNE",
-		"EUW1" => "EUW",
-		"JP1" => "JP",
-		"KR" => "KR",
-		"LA1" => "LAN",
-		"LA2" => "LAS",
-		"NA1" => "NA",
-		"OC1" => "OCE",
-		"RU" => "RU",
-		"TR1" => "TR",
-	];
+        $champions = [ "" => "",];
+        $championsKey = [ "" => "",];
+
 	$i = 0;
 	$playername = $_GET['playername'];
 	$region = $regions[html_entity_decode($_GET['region'])];
-	$summonerRegion = $summonerRegions[$region];
-	$lcplayername = strtolower($playername);
-	$summonerInfo = $api->get_summonerId($summonerRegion, $playername);
-	$champmastery = $api->get_championMastery($region, $summonerInfo[$lcplayername]['id']);
+	$encodedPlayername = strtolower(urlencode($playername));
+	$summonerInfo = $api->get_summonerId($region, $encodedPlayername);
+	$champmastery = $api->get_championMastery($region, $summonerInfo['id']);
 	$championInfo = $api->get_champList();
 	if($champmastery['status'] != null)
 	{
@@ -104,14 +91,21 @@ if($_GET['playername'] != null && $_GET['region'] != null)
 				<button class=\"btn btn-warning\" data-toggle=\"collapse\" data-target=\"#legal\">Legal</button></li>
 				<div id=\"legal\" class=\"collapse well\">
 				Champion Mastery isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends &copy; Riot Games, Inc.
-			</br></br>Copyright &copy; <a href=\"http://derrickshimada.com\">Derrick Shimada</a> 2016 All Rights Reserved.
+			</br></br>Copyright &copy; <a href=\"http://derrickshimada.com\">Derrick Shimada</a> 2016-2017 All Rights Reserved.
 				</div>
 		  </div>
 		</nav>
 		</html>";
 		return;
 	}
-	echo "<div class='col-xs-1'></div><div class='col-xs-10'><table class='table table-hover table-bordered'> <tr> <th></th> <th>Champion</th> <th>Mastery Level</th> <th>Points</th> <th>Points until lvl up</th> <th>Highest Grade</th> <th>Chest Earned</th> </tr> <tr>";
+	echo "<div class='col-xs-1'></div><div class='col-xs-10'><table class='table table-hover table-bordered'> <tr> <th></th> <th>Champion</th> <th>Mastery Level</th> <th>Points</th> <th>Points until lvl up</th> <th>Chest Earned</th> </tr> <tr>";
+
+        foreach ($championInfo['data'] as $champ)
+        {
+             $tmpId = $champ['id'];
+             $champions[$tmpId] = $champ['name'];
+             $championsKey[$tmpId] = $champ['key'];
+        }
 	foreach ($champmastery as $champion)
 	{
 		$cid = $champion['championId'];
@@ -143,14 +137,13 @@ if($_GET['playername'] != null && $_GET['region'] != null)
 		{
 				echo "<tr>";
 		}
-		echo "<td><img src='http://ddragon.leagueoflegends.com/cdn/6.7.1/img/champion/".$championInfo['data'][$cid]['key'].".png' alt='champpic' height='42' width='42' ></td>";
-		echo "<td>".$championInfo['data'][$cid]['name']."</td>";
+		echo "<td><img src='http://ddragon.leagueoflegends.com/cdn/".$championInfo['version']."/img/champion/".$championsKey[$cid].".png' alt='champpic' height='42' width='42' ></td>";
+		echo "<td>".$champions[$cid]."</td>";
 		echo "<td>".$champion['championLevel']."</td>";
 		echo "<td>".$champion['championPoints']."</td>";
 		$champProgress = intval($champion['championPoints']) + intval($champion['championPointsUntilNextLevel']);
 		$champPercent  = (intval($champion['championPoints']) / intval($champProgress)) * 100;
 		echo '<td><div class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="'.$champPercent.'"  aria-valuemin="0" aria-valuemax="100" style="min-width:3em; width:'.$champPercent.'%;">'.$champion['championPointsUntilNextLevel'].'</div></div>';
-		echo "<td>".$champion['highestGrade']."</td>";
 		if(intval($champion['chestGranted']) == 1)
 		{
 			echo "<td><span class='glyphicon glyphicon-briefcase'></span></td>";
@@ -168,11 +161,16 @@ if($_GET['playername'] != null && $_GET['region'] != null)
 </body>
 <nav class="navbar navbar-fixed-bottom">
   <div class="container-fluid">
+    <div class="pull-left">
 		<button class="btn btn-info" onclick="location.href = 'http://derrickshimada.com';">Home</button>
+    </div>
+    <div class="pull-right">
 		<button class="btn btn-warning" data-toggle="collapse" data-target="#legal">Legal</button></li>
+    </div>
+    <div class="clearfix"> </div>
 		<div id="legal" class="collapse well">
 		Champion Mastery isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends &copy; Riot Games, Inc.
-	</br></br>Copyright &copy; <a href="http://derrickshimada.com">Derrick Shimada</a> 2016 All Rights Reserved.
+	</br></br>Copyright &copy; <a href="http://derrickshimada.com">Derrick Shimada</a> 2016-2017 All Rights Reserved.
 		</div>
   </div>
 </nav>
